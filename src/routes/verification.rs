@@ -24,32 +24,20 @@ pub async fn verification_page(
     let mut ctx = Context::new();
     
     if let Some((user, jar)) = ensure_session(jar.clone(), &db) {
+        // Check if already verified
         if user.role.can_post() {
-            ctx.insert("error", "You are already verified");
             ctx.insert("user", &user);
-            let html = tera.render("error.html", &ctx).unwrap();
+            ctx.insert("already_verified", &true);
+            let html = tera.render("verification.html", &ctx).unwrap_or_else(|e| format!("Error: {}", e));
             return (jar, Html(html));
         }
         
+        // Check for pending request
         let conn = db.lock().unwrap();
         let has_pending = db::has_pending_verification(&conn, user.id).unwrap_or(false);
         
-        if has_pending {
-            ctx.insert("message", "Your verification request is pending review");
-            ctx.insert("user", &user);
-            let html = tera.render("verification_pending.html", &ctx).unwrap();
-            return (jar, Html(html));
-        }
-        
         ctx.insert("user", &user);
-        
-        let proof_types = vec![
-            ("ase_cert", "ASE Certification Number"),
-            ("shop_employment", "Shop Employment Verification"),
-            ("business_license", "Automotive Business License"),
-            ("other", "Other Professional Credential"),
-        ];
-        ctx.insert("proof_types", &proof_types);
+        ctx.insert("has_pending", &has_pending);
         
         let html = tera.render("verification.html", &ctx).unwrap_or_else(|e| format!("Error: {}", e));
         return (jar, Html(html));
@@ -68,33 +56,46 @@ pub async fn submit_verification(
     
     if let Some((user, jar)) = ensure_session(jar.clone(), &db) {
         if user.role.can_post() {
-            ctx.insert("error", "You are already verified");
+            let html = r#"<script>window.location.href = "/";</script>"#.to_string();
+            return (jar, Html(html));
+        }
+        
+        // Validation
+        if form.proof_text.trim().is_empty() {
             ctx.insert("user", &user);
-            let html = tera.render("error.html", &ctx).unwrap();
+            ctx.insert("error", "Please provide verification details");
+            let html = tera.render("verification.html", &ctx).unwrap();
+            return (jar, Html(html));
+        }
+        
+        if form.proof_text.len() < 50 {
+            ctx.insert("user", &user);
+            ctx.insert("error", "Please provide more detail (at least 50 characters)");
+            let html = tera.render("verification.html", &ctx).unwrap();
             return (jar, Html(html));
         }
         
         let conn = db.lock().unwrap();
         
-        let has_pending = db::has_pending_verification(&conn, user.id).unwrap_or(false);
-        if has_pending {
-            ctx.insert("message", "You already have a pending verification request");
+        // Check for existing pending request
+        if db::has_pending_verification(&conn, user.id).unwrap_or(false) {
             ctx.insert("user", &user);
-            let html = tera.render("verification_pending.html", &ctx).unwrap();
+            ctx.insert("has_pending", &true);
+            ctx.insert("error", "You already have a pending verification request");
+            let html = tera.render("verification.html", &ctx).unwrap();
             return (jar, Html(html));
         }
         
         match db::create_verification_request(&conn, user.id, &form.proof_text, &form.proof_type) {
             Ok(_) => {
-                ctx.insert("message", "Your verification request has been submitted and is pending review");
-                ctx.insert("user", &user);
-                let html = tera.render("verification_pending.html", &ctx).unwrap();
+                let _ = db::log_activity(&conn, user.id, "submit_verification", None, None, None, None);
+                let html = r#"<script>window.location.href = "/verification";</script>"#.to_string();
                 return (jar, Html(html));
             }
             Err(_) => {
-                ctx.insert("error", "Failed to submit verification request");
                 ctx.insert("user", &user);
-                let html = tera.render("error.html", &ctx).unwrap();
+                ctx.insert("error", "Failed to submit verification request");
+                let html = tera.render("verification.html", &ctx).unwrap();
                 return (jar, Html(html));
             }
         }

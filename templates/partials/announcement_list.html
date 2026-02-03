@@ -1,0 +1,28 @@
+{% if announcements %}
+<div class="post-list">
+    {% for a in announcements %}
+    <div class="announcement-banner {{ a.announcement_type }}">
+        <span class="announcement-icon">
+            {% if a.announcement_type == "warning" %}⚠️{% elif a.announcement_type == "success" %}✅{% else %}📢{% endif %}
+        </span>
+        <div class="announcement-content" style="flex: 1;">
+            <div class="announcement-title">{{ a.title }}</div>
+            <div class="announcement-text">{{ a.content }}</div>
+            <div class="text-xs text-muted mt-2">
+                By {{ a.creator_name }} • {{ a.created_at }}
+                {% if a.expires_at %} • Expires: {{ a.expires_at }}{% endif %}
+            </div>
+        </div>
+        <button class="btn btn-sm btn-ghost" 
+                hx-post="/admin/announcement/{{ a.id }}/deactivate"
+                hx-target="#announcement-list"
+                hx-confirm="Deactivate this announcement?">✗</button>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">📢</div>
+    <h3 class="empty-state-title">No active announcements</h3>
+</div>
+{% endif %}

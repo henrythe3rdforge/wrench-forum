@@ -3,48 +3,69 @@
 {% block title %}Parts Stores - Wrench Forum{% endblock %}
 
 {% block content %}
-<div class="stores-page">
-    <h1>Parts Stores & Retailers</h1>
-    <p class="stores-description">Community-rated parts stores. Verified mechanics can vote on store reliability.</p>
+<div class="container">
+    <div class="mb-6">
+        <h1>🏪 Parts Stores Directory</h1>
+        <p class="text-secondary">Community-rated auto parts suppliers. Verified mechanics can vote and submit stores.</p>
+    </div>
     
-    <div class="stores-layout">
+    <div class="forum-layout">
         <aside class="sidebar">
-            <h3>Categories</h3>
-            <ul class="category-list">
-                <li class="{% if not current_category %}active{% endif %}">
-                    <a href="/stores">All Stores</a>
-                </li>
-                {% for cat in default_categories %}
-                <li class="{% if current_category == cat %}active{% endif %}">
-                    <a href="/stores?category={{ cat | urlencode }}">{{ cat }}</a>
-                </li>
-                {% endfor %}
-            </ul>
+            <!-- Categories -->
+            <div class="sidebar-card">
+                <div class="sidebar-header">Categories</div>
+                <ul class="category-list">
+                    <li class="category-item">
+                        <a href="/stores" class="category-link {% if not selected_category %}active{% endif %}">
+                            <span class="category-icon">📦</span>
+                            <span class="category-name">All Stores</span>
+                        </a>
+                    </li>
+                    {% for cat in store_categories %}
+                    <li class="category-item">
+                        <a href="/stores?category={{ cat }}" class="category-link {% if selected_category == cat %}active{% endif %}">
+                            <span class="category-name">{{ cat }}</span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
             
-            {% if user %}
-            <h3>Submit Store</h3>
-            <form hx-post="/stores/submit" hx-target="#store-list" hx-swap="innerHTML" class="store-form">
-                <div class="form-group">
-                    <input type="text" name="name" placeholder="Store Name" required>
-                </div>
-                <div class="form-group">
-                    <input type="url" name="url" placeholder="https://..." required>
-                </div>
-                <div class="form-group">
-                    <select name="category" required>
-                        <option value="">Category...</option>
-                        {% for cat in default_categories %}
-                        <option value="{{ cat }}">{{ cat }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary btn-block">Submit</button>
-            </form>
+            <!-- Submit Store -->
+            {% if user and user.role != "Unverified" %}
+            <div class="sidebar-card">
+                <div class="sidebar-header">Submit a Store</div>
+                <form class="p-4" hx-post="/stores/submit" hx-target="#store-grid" hx-swap="innerHTML">
+                    <div class="form-group">
+                        <input type="text" name="name" placeholder="Store Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="url" name="url" placeholder="https://..." required>
+                    </div>
+                    <div class="form-group">
+                        <textarea name="description" placeholder="Brief description (optional)" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <select name="category" required>
+                            <option value="">Select category...</option>
+                            <option value="General Parts">General Parts</option>
+                            <option value="OEM Parts">OEM Parts</option>
+                            <option value="Performance">Performance</option>
+                            <option value="Electrical">Electrical</option>
+                            <option value="Tools">Tools</option>
+                            <option value="Fluids & Chemicals">Fluids & Chemicals</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Submit Store</button>
+                </form>
+            </div>
             {% endif %}
         </aside>
         
-        <section class="main-content" id="store-list">
-            {% include "partials/store_list.html" %}
+        <section class="main-content">
+            <div id="store-grid" class="store-grid">
+                {% include "partials/store_list.html" %}
+            </div>
         </section>
     </div>
 </div>

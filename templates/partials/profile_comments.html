@@ -1,0 +1,30 @@
+{% if comments %}
+<div class="post-list">
+    {% for comment in comments %}
+    <div class="post-card">
+        <div class="vote-controls">
+            <span class="score">{{ comment.score }}</span>
+        </div>
+        <div class="post-content">
+            <div class="comment-body mb-4">
+                {% if comment.body_html %}
+                {{ comment.body_html | safe }}
+                {% else %}
+                {{ comment.body | truncate(length=300) }}
+                {% endif %}
+            </div>
+            <div class="post-meta">
+                <span class="meta-item">on post #{{ comment.post_id }}</span>
+                <span class="meta-separator">•</span>
+                <span class="meta-item time">{{ comment.created_at }}</span>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">💬</div>
+    <h3 class="empty-state-title">No comments yet</h3>
+</div>
+{% endif %}

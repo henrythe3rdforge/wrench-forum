@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile - Wrench Forum{% endblock %}
+
+{% block content %}
+<div class="container-narrow">
+    <div class="auth-card" style="max-width: 600px;">
+        <div class="auth-header">
+            <h1 class="auth-title">Edit Profile</h1>
+        </div>
+        
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        
+        <!-- Avatar Upload -->
+        <div class="form-group text-center mb-6">
+            <div id="avatar-preview" class="mb-4">
+                {% if profile and profile.avatar_path %}
+                <img src="{{ profile.avatar_path }}" class="profile-avatar" alt="Avatar">
+                {% else %}
+                <div class="profile-avatar-placeholder mx-auto">{{ user.username | first | upper }}</div>
+                {% endif %}
+            </div>
+            
+            <form hx-post="/upload/avatar" hx-target="#avatar-preview" hx-encoding="multipart/form-data">
+                <input type="file" name="avatar" accept="image/*" onchange="this.form.requestSubmit()" style="display: none;" id="avatar-input">
+                <label for="avatar-input" class="btn btn-secondary btn-sm">📷 Change Avatar</label>
+            </form>
+            <p class="form-hint mt-2">Max 2MB. JPEG, PNG, GIF, or WebP.</p>
+        </div>
+        
+        <form method="POST" action="/profile/edit">
+            <div class="form-group">
+                <label class="form-label" for="bio">Bio</label>
+                <textarea id="bio" name="bio" rows="3" placeholder="Tell us about yourself...">{{ profile.bio | default(value='') }}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="specialties">Specialties</label>
+                <input type="text" id="specialties" name="specialties" 
+                       value="{{ profile.specialties | default(value='') }}"
+                       placeholder="e.g., Diesel engines, European cars, Electrical systems">
+                <p class="form-hint">Your areas of expertise</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="location">Location</label>
+                <input type="text" id="location" name="location" 
+                       value="{{ profile.location | default(value='') }}"
+                       placeholder="e.g., Austin, TX">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="website">Website</label>
+                <input type="url" id="website" name="website" 
+                       value="{{ profile.website | default(value='') }}"
+                       placeholder="https://yourshop.com">
+            </div>
+            
+            <div class="btn-group mt-6">
+                <button type="submit" class="btn btn-primary btn-lg">Save Profile</button>
+                <a href="/user/{{ user.username }}" class="btn btn-secondary btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

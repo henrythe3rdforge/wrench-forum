@@ -3,59 +3,128 @@
 {% block title %}{{ profile_user.username }} - Wrench Forum{% endblock %}
 
 {% block content %}
-<div class="profile-page">
+<div class="container-narrow">
+    <!-- Profile Header -->
     <div class="profile-header">
-        <h1>
-            {{ profile_user.username }}
-            {% if profile_user.role == "VerifiedMechanic" %}
-            <span class="badge verified">🔧 Verified Mechanic</span>
-            {% elif profile_user.role == "Moderator" %}
-            <span class="badge mod">🛡️ Moderator</span>
-            {% elif profile_user.role == "Admin" %}
-            <span class="badge admin">⭐ Admin</span>
-            {% endif %}
-        </h1>
-        <p class="join-date">Member since {{ profile_user.created_at }}</p>
+        {% if profile and profile.avatar_path %}
+        <img src="{{ profile.avatar_path }}" alt="{{ profile_user.username }}" class="profile-avatar">
+        {% else %}
+        <div class="profile-avatar-placeholder">{{ profile_user.username | first | upper }}</div>
+        {% endif %}
         
-        {% if is_own_profile and profile_user.role == "Unverified" %}
-        <div class="verify-prompt">
-            {% if has_pending_verification %}
-            <p>Your verification request is pending review.</p>
-            {% else %}
-            <p>Want to create posts and get the verified mechanic badge?</p>
-            <a href="/verification" class="btn btn-primary">Get Verified</a>
+        <div class="profile-info">
+            <div class="profile-name">
+                <h1 class="profile-username">{{ profile_user.username }}</h1>
+                {% if profile_user.role == "VerifiedMechanic" %}
+                <span class="badge verified">🔧 Verified Mechanic</span>
+                {% elif profile_user.role == "Moderator" %}
+                <span class="badge mod">🛡️ Moderator</span>
+                {% elif profile_user.role == "Admin" %}
+                <span class="badge admin">⭐ Admin</span>
+                {% endif %}
+            </div>
+            
+            {% if profile_user.flair %}
+            <p class="user-flair mb-4">{{ profile_user.flair }}</p>
+            {% endif %}
+            
+            <div class="profile-meta">
+                <span class="meta-item">📅 Joined {{ profile_user.created_at }}</span>
+                {% if profile and profile.location %}
+                <span class="meta-item">📍 {{ profile.location }}</span>
+                {% endif %}
+                {% if profile and profile.website %}
+                <span class="meta-item"><a href="{{ profile.website }}" target="_blank">🔗 Website</a></span>
+                {% endif %}
+            </div>
+            
+            {% if profile and profile.bio %}
+            <p class="profile-bio">{{ profile.bio }}</p>
+            {% endif %}
+            
+            {% if profile and profile.specialties %}
+            <div class="mt-4">
+                <strong class="text-sm text-muted">Specialties:</strong>
+                <p class="text-secondary">{{ profile.specialties }}</p>
+            </div>
+            {% endif %}
+            
+            {% if stats %}
+            <div class="profile-stats">
+                <div class="profile-stat">
+                    <div class="profile-stat-value">{{ stats.post_count }}</div>
+                    <div class="profile-stat-label">Posts</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value">{{ stats.comment_count }}</div>
+                    <div class="profile-stat-label">Comments</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value">{{ stats.karma }}</div>
+                    <div class="profile-stat-label">Karma</div>
+                </div>
+            </div>
             {% endif %}
         </div>
-        {% endif %}
     </div>
     
-    <section class="user-posts">
-        <h2>Posts by {{ profile_user.username }}</h2>
-        
-        {% if posts | length > 0 %}
+    {% if is_own_profile %}
+    <div class="mb-6">
+        <a href="/profile/edit" class="btn btn-secondary">✏️ Edit Profile</a>
+    </div>
+    {% endif %}
+    
+    <!-- Profile Tabs -->
+    <div class="profile-tabs">
+        <button class="profile-tab active" 
+                hx-get="/user/{{ profile_user.username }}/posts"
+                hx-target="#profile-content"
+                onclick="setActiveTab(this)">Posts</button>
+        <button class="profile-tab"
+                hx-get="/user/{{ profile_user.username }}/comments"
+                hx-target="#profile-content"
+                onclick="setActiveTab(this)">Comments</button>
+    </div>
+    
+    <!-- Profile Content -->
+    <div id="profile-content">
+        {% if posts %}
         <div class="post-list">
             {% for post in posts %}
-            <article class="post-card compact">
-                <div class="vote-score">
+            <article class="post-card">
+                <div class="vote-controls">
                     <span class="score">{{ post.score }}</span>
                 </div>
                 <div class="post-content">
-                    <h3><a href="/post/{{ post.id }}">{{ post.title }}</a></h3>
+                    <h2 class="post-title">
+                        <a href="/post/{{ post.id }}">{{ post.title }}</a>
+                    </h2>
                     <div class="post-meta">
-                        <span class="category"><a href="/category/{{ post.category_slug }}">{{ post.category_name }}</a></span>
-                        <span class="comments">💬 {{ post.comment_count | default(value=0) }}</span>
-                        <span class="time">{{ post.created_at }}</span>
-                        {% if post.removed %}
-                        <span class="removed-badge">Removed</span>
-                        {% endif %}
+                        <span class="meta-item">
+                            <a href="/category/{{ post.category_slug }}">{{ post.category_name }}</a>
+                        </span>
+                        <span class="meta-separator">•</span>
+                        <span class="meta-item">💬 {{ post.comment_count | default(value=0) }}</span>
+                        <span class="meta-separator">•</span>
+                        <span class="meta-item time">{{ post.created_at }}</span>
                     </div>
                 </div>
             </article>
             {% endfor %}
         </div>
         {% else %}
-        <p class="no-posts">No posts yet.</p>
+        <div class="empty-state">
+            <div class="empty-state-icon">📝</div>
+            <h3 class="empty-state-title">No posts yet</h3>
+        </div>
         {% endif %}
-    </section>
+    </div>
 </div>
+
+<script>
+function setActiveTab(clicked) {
+    document.querySelectorAll('.profile-tab').forEach(tab => tab.classList.remove('active'));
+    clicked.classList.add('active');
+}
+</script>
 {% endblock %}

@@ -1,0 +1,31 @@
+{% if posts %}
+<div class="post-list">
+    {% for post in posts %}
+    <article class="post-card">
+        <div class="vote-controls">
+            <span class="score">{{ post.score }}</span>
+        </div>
+        <div class="post-content">
+            <h2 class="post-title">
+                <a href="/post/{{ post.id }}">{{ post.title }}</a>
+            </h2>
+            <div class="post-excerpt">{{ post.body | truncate(length=200) }}</div>
+            <div class="post-meta">
+                <span class="meta-item">
+                    <a href="/category/{{ post.category_slug }}">{{ post.category_name }}</a>
+                </span>
+                <span class="meta-separator">•</span>
+                <span class="meta-item">by {{ post.username }}</span>
+                <span class="meta-separator">•</span>
+                <span class="meta-item">💬 {{ post.comment_count | default(value=0) }}</span>
+            </div>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">🔍</div>
+    <h3 class="empty-state-title">No results</h3>
+</div>
+{% endif %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Bookmarks - Wrench Forum{% endblock %}
+
+{% block content %}
+<div class="container-narrow">
+    <h1 class="mb-6">🔖 Saved Posts</h1>
+    
+    {% if posts %}
+    <div class="post-list">
+        {% for post in posts %}
+        <article class="post-card">
+            <div class="vote-controls">
+                <span class="score">{{ post.score }}</span>
+            </div>
+            <div class="post-content">
+                <h2 class="post-title">
+                    <a href="/post/{{ post.id }}">{{ post.title }}</a>
+                </h2>
+                <div class="post-meta">
+                    <span class="meta-item">
+                        <a href="/category/{{ post.category_slug }}">{{ post.category_name }}</a>
+                    </span>
+                    <span class="meta-separator">•</span>
+                    <span class="meta-item">by <a href="/user/{{ post.username }}">{{ post.username }}</a></span>
+                    <span class="meta-separator">•</span>
+                    <span class="meta-item">💬 {{ post.comment_count | default(value=0) }}</span>
+                    <span class="meta-separator">•</span>
+                    <span class="meta-item time">{{ post.created_at }}</span>
+                </div>
+            </div>
+            <button class="btn-icon" 
+                    hx-post="/post/{{ post.id }}/bookmark" 
+                    hx-swap="outerHTML"
+                    title="Remove bookmark">🔖</button>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🔖</div>
+        <h3 class="empty-state-title">No saved posts</h3>
+        <p class="empty-state-text">Click the bookmark icon on posts to save them for later</p>
+        <a href="/" class="btn btn-primary">Browse Posts</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

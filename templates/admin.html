@@ -3,56 +3,144 @@
 {% block title %}Admin Panel - Wrench Forum{% endblock %}
 
 {% block content %}
-<div class="admin-page">
-    <h1>⭐ Admin Panel</h1>
+<h1 class="mb-6">⚙️ Admin Panel</h1>
+
+<!-- Stats Overview -->
+{% if stats %}
+<div class="admin-grid mb-6">
+    <div class="admin-stat-card">
+        <div class="admin-stat-value">{{ stats.total_users }}</div>
+        <div class="admin-stat-label">Total Users</div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="admin-stat-value">{{ stats.verified_users }}</div>
+        <div class="admin-stat-label">Verified</div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="admin-stat-value">{{ stats.total_posts }}</div>
+        <div class="admin-stat-label">Posts</div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="admin-stat-value">{{ stats.total_comments }}</div>
+        <div class="admin-stat-label">Comments</div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="admin-stat-value">{{ stats.posts_today }}</div>
+        <div class="admin-stat-label">Posts Today</div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="admin-stat-value">{{ stats.total_stores }}</div>
+        <div class="admin-stat-label">Stores</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Announcements -->
+<section class="admin-section">
+    <div class="admin-section-header">
+        <h2 class="admin-section-title">📢 Announcements</h2>
+    </div>
     
-    <section class="admin-section">
-        <h2>Pending Verification Requests</h2>
-        <div id="verification-queue">
-            {% include "partials/verification_queue.html" %}
-        </div>
-    </section>
+    <div class="sidebar-card mb-4">
+        <form class="p-4" hx-post="/admin/announcement" hx-target="#announcement-list" hx-swap="innerHTML">
+            <div class="form-group">
+                <input type="text" name="title" placeholder="Announcement title" required>
+            </div>
+            <div class="form-group">
+                <textarea name="content" placeholder="Announcement content..." required rows="3"></textarea>
+            </div>
+            <div class="flex gap-4">
+                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                    <select name="announcement_type">
+                        <option value="info">ℹ️ Info</option>
+                        <option value="warning">⚠️ Warning</option>
+                        <option value="success">✅ Success</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                    <select name="expires_days">
+                        <option value="">Never expires</option>
+                        <option value="1">1 day</option>
+                        <option value="7">1 week</option>
+                        <option value="30">1 month</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Post</button>
+            </div>
+        </form>
+    </div>
     
-    <section class="admin-section">
-        <h2>User Management</h2>
-        <table class="admin-table">
+    <div id="announcement-list">
+        {% include "partials/announcement_list.html" %}
+    </div>
+</section>
+
+<!-- Pending Verifications -->
+<section class="admin-section">
+    <div class="admin-section-header">
+        <h2 class="admin-section-title">✓ Pending Verifications ({{ pending_verifications | length }})</h2>
+    </div>
+    <div id="verification-queue">
+        {% include "partials/verification_queue.html" %}
+    </div>
+</section>
+
+<!-- User Management -->
+<section class="admin-section">
+    <div class="admin-section-header">
+        <h2 class="admin-section-title">👥 User Management</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Username</th>
                     <th>Email</th>
                     <th>Role</th>
-                    <th>Joined</th>
+                    <th>Karma</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for u in all_users %}
+                {% for u in users %}
                 <tr>
-                    <td>{{ u.id }}</td>
                     <td><a href="/user/{{ u.username }}">{{ u.username }}</a></td>
                     <td>{{ u.email }}</td>
-                    <td id="role-{{ u.id }}">
-                        <span class="role-badge {{ u.role | lower }}">{{ u.role | lower }}</span>
-                    </td>
-                    <td>{{ u.created_at }}</td>
-                    <td>{% if u.banned %}<span class="status-banned">Banned</span>{% else %}<span class="status-active">Active</span>{% endif %}</td>
+                    <td><span class="role-badge {{ u.role | lower }}">{{ u.role }}</span></td>
+                    <td>{{ u.karma }}</td>
                     <td>
-                        <form hx-post="/admin/user/{{ u.id }}/role" hx-target="#role-{{ u.id }}" hx-swap="innerHTML" class="inline-form">
+                        {% if u.banned %}
+                        <span class="status-banned">Banned</span>
+                        {% else %}
+                        <span class="status-active">Active</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form class="inline-form" hx-post="/admin/user/{{ u.id }}/role" hx-swap="none">
                             <select name="role">
                                 <option value="unverified" {% if u.role == "Unverified" %}selected{% endif %}>Unverified</option>
-                                <option value="verified_mechanic" {% if u.role == "VerifiedMechanic" %}selected{% endif %}>Verified Mechanic</option>
-                                <option value="moderator" {% if u.role == "Moderator" %}selected{% endif %}>Moderator</option>
+                                <option value="verified_mechanic" {% if u.role == "VerifiedMechanic" %}selected{% endif %}>Verified</option>
+                                <option value="moderator" {% if u.role == "Moderator" %}selected{% endif %}>Mod</option>
                                 <option value="admin" {% if u.role == "Admin" %}selected{% endif %}>Admin</option>
                             </select>
-                            <button type="submit" class="btn btn-small">Update</button>
+                            <button type="submit" class="btn btn-sm btn-secondary">Update</button>
                         </form>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-    </section>
-</div>
+    </div>
+</section>
+
+<!-- Recent Activity -->
+<section class="admin-section">
+    <div class="admin-section-header">
+        <h2 class="admin-section-title">📋 Recent Activity</h2>
+    </div>
+    <div id="activity-logs">
+        {% include "partials/activity_logs.html" %}
+    </div>
+</section>
 {% endblock %}

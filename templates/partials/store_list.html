@@ -1,49 +1,54 @@
-<div class="store-grid">
-    {% for store in stores %}
-    <div class="store-card">
-        <div class="store-header">
-            <h3><a href="{{ store.url }}" target="_blank" rel="noopener">{{ store.name }}</a></h3>
-            <span class="store-category">{{ store.category }}</span>
-        </div>
-        <div class="store-info">
-            <p class="store-url">{{ store.url }}</p>
-            <p class="store-submitted">Submitted by <a href="/user/{{ store.submitter_name }}">{{ store.submitter_name }}</a></p>
-        </div>
-        <div class="store-rating">
-            <div class="reliability" id="reliability-{{ store.id }}">
-                {% if store.reliability_score %}
-                <span class="score {% if store.reliability_score >= 70 %}good{% elif store.reliability_score >= 40 %}neutral{% else %}bad{% endif %}">
-                    {{ store.reliability_score | round }}%
-                </span>
-                {% else %}
-                <span class="score neutral">N/A</span>
-                {% endif %}
-                <span class="votes">({{ store.positive_votes }}/{{ store.total_votes }} positive)</span>
-            </div>
-            
-            {% if can_vote %}
-            <div class="store-vote-controls">
-                <button class="vote-btn good" 
-                        hx-post="/store/{{ store.id }}/vote" 
-                        hx-vals='{"positive": true}'
-                        hx-target="#reliability-{{ store.id }}"
-                        hx-swap="innerHTML"
-                        title="Reliable">👍</button>
-                <button class="vote-btn bad" 
-                        hx-post="/store/{{ store.id }}/vote" 
-                        hx-vals='{"positive": false}'
-                        hx-target="#reliability-{{ store.id }}"
-                        hx-swap="innerHTML"
-                        title="Unreliable">👎</button>
-            </div>
-            {% elif user %}
-            <p class="vote-notice">Only verified mechanics can vote</p>
-            {% else %}
-            <p class="vote-notice"><a href="/login">Login</a> to vote</p>
-            {% endif %}
-        </div>
+{% if stores %}
+{% for store in stores %}
+<div class="store-card" id="store-{{ store.id }}">
+    <div class="store-header">
+        <h3 class="store-name">{{ store.name }}</h3>
+        <span class="store-category-badge">{{ store.category }}</span>
     </div>
-    {% else %}
-    <p class="no-stores">No stores in this category yet. Be the first to submit one!</p>
-    {% endfor %}
+    
+    <a href="{{ store.url }}" class="store-url" target="_blank" rel="noopener">{{ store.url }}</a>
+    
+    {% if store.description %}
+    <p class="store-description">{{ store.description }}</p>
+    {% endif %}
+    
+    <p class="text-xs text-muted mb-4">Submitted by {{ store.submitter_name }}</p>
+    
+    <div class="store-rating">
+        <div class="reliability-score">
+            {% if store.reliability_score %}
+            <span class="score {% if store.reliability_score >= 70 %}good{% elif store.reliability_score >= 40 %}neutral{% else %}bad{% endif %}">
+                {{ store.reliability_score | round }}%
+            </span>
+            {% else %}
+            <span class="score neutral">—</span>
+            {% endif %}
+            <span class="votes">({{ store.total_votes }} votes)</span>
+        </div>
+        
+        {% if user and user.role != "Unverified" %}
+        <div class="store-vote-buttons">
+            <button class="vote-btn upvote" 
+                    hx-post="/store/{{ store.id }}/vote"
+                    hx-vals='{"positive": true}'
+                    hx-target="#store-{{ store.id }} .reliability-score"
+                    hx-swap="outerHTML"
+                    title="Reliable">👍</button>
+            <button class="vote-btn downvote"
+                    hx-post="/store/{{ store.id }}/vote"
+                    hx-vals='{"positive": false}'
+                    hx-target="#store-{{ store.id }} .reliability-score"
+                    hx-swap="outerHTML"
+                    title="Unreliable">👎</button>
+        </div>
+        {% endif %}
+    </div>
 </div>
+{% endfor %}
+{% else %}
+<div class="empty-state" style="grid-column: 1 / -1;">
+    <div class="empty-state-icon">🏪</div>
+    <h3 class="empty-state-title">No stores yet</h3>
+    <p class="empty-state-text">Be the first to submit a parts store!</p>
+</div>
+{% endif %}

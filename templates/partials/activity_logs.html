@@ -1,0 +1,34 @@
+{% if recent_activity or activity %}
+{% set logs = recent_activity | default(value=activity) %}
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Action</th>
+            <th>Target</th>
+            <th>Time</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for log in logs %}
+        <tr>
+            <td><a href="/user/{{ log.username }}">{{ log.username }}</a></td>
+            <td>{{ log.action }}</td>
+            <td>
+                {% if log.target_type %}
+                {{ log.target_type }}{% if log.target_id %} #{{ log.target_id }}{% endif %}
+                {% else %}
+                —
+                {% endif %}
+            </td>
+            <td class="text-muted">{{ log.created_at }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">📋</div>
+    <h3 class="empty-state-title">No activity yet</h3>
+</div>
+{% endif %}

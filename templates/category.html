@@ -4,86 +4,109 @@
 
 {% block content %}
 <div class="forum-layout">
+    <!-- Sidebar -->
     <aside class="sidebar">
-        <h3>Categories</h3>
-        <ul class="category-list">
-            {% for cat in categories %}
-            <li class="{% if cat.slug == current_slug %}active{% endif %}">
-                <a href="/category/{{ cat.slug }}">{{ cat.name }}</a>
-            </li>
-            {% endfor %}
-        </ul>
-        
-        {% if user and user.role != "Unverified" %}
-        <a href="/post/new" class="btn btn-primary">New Post</a>
-        {% elif user %}
-        <div class="verify-prompt">
-            <p>Verify your mechanic credentials to post</p>
-            <a href="/verification" class="btn btn-secondary">Get Verified</a>
+        <div class="sidebar-card">
+            <div class="sidebar-header">Categories</div>
+            <ul class="category-list">
+                {% for cat in categories %}
+                <li class="category-item">
+                    <a href="/category/{{ cat.slug }}" class="category-link {% if current_slug == cat.slug %}active{% endif %}">
+                        <span class="category-icon">{{ cat.icon | default(value="📁") }}</span>
+                        <span class="category-name">{{ cat.name }}</span>
+                        {% if cat.post_count %}
+                        <span class="category-count">{{ cat.post_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
         </div>
-        {% endif %}
+        
+        <div class="sidebar-card">
+            <div class="sidebar-action">
+                {% if user and user.role != "Unverified" %}
+                <a href="/post/new" class="btn btn-primary btn-block">✏️ New Post</a>
+                {% elif user %}
+                <a href="/verification" class="btn btn-secondary btn-block">Get Verified</a>
+                {% else %}
+                <a href="/register" class="btn btn-primary btn-block">Sign Up</a>
+                {% endif %}
+            </div>
+        </div>
     </aside>
     
     <section class="main-content">
         {% if category %}
-        <div class="category-header">
-            <h1>{{ category.name }}</h1>
-            <p>{{ category.description }}</p>
+        <div class="mb-6">
+            <h1 class="flex items-center gap-2">
+                <span>{{ category.icon | default(value="📁") }}</span>
+                {{ category.name }}
+            </h1>
+            {% if category.description %}
+            <p class="text-secondary">{{ category.description }}</p>
+            {% endif %}
         </div>
         {% endif %}
         
         <div class="sort-tabs">
-            <a href="/category/{{ current_slug }}?sort=hot" class="tab {% if sort == 'hot' %}active{% endif %}">🔥 Hot</a>
-            <a href="/category/{{ current_slug }}?sort=new" class="tab {% if sort == 'new' %}active{% endif %}">🕐 New</a>
-            <a href="/category/{{ current_slug }}?sort=top" class="tab {% if sort == 'top' %}active{% endif %}">⬆️ Top</a>
+            <a href="/category/{{ current_slug }}?sort=hot" class="sort-tab {% if sort == 'hot' %}active{% endif %}">🔥 Hot</a>
+            <a href="/category/{{ current_slug }}?sort=new" class="sort-tab {% if sort == 'new' %}active{% endif %}">🕐 New</a>
+            <a href="/category/{{ current_slug }}?sort=top" class="sort-tab {% if sort == 'top' %}active{% endif %}">⬆️ Top</a>
         </div>
         
         <div class="post-list">
             {% for post in posts %}
-            <article class="post-card">
+            <article class="post-card {% if post.pinned %}pinned{% endif %}">
                 <div class="vote-controls">
                     {% if user %}
-                    <button class="vote-btn upvote" 
-                            hx-post="/post/{{ post.id }}/vote" 
-                            hx-vals='{"value": 1}'
-                            hx-target="#score-{{ post.id }}"
-                            hx-swap="innerHTML">▲</button>
+                    <button class="vote-btn upvote" hx-post="/post/{{ post.id }}/vote" hx-vals='{"value": 1}' hx-target="#score-{{ post.id }}" hx-swap="innerHTML">▲</button>
                     {% else %}
                     <span class="vote-btn disabled">▲</span>
                     {% endif %}
                     <span id="score-{{ post.id }}" class="score">{{ post.score }}</span>
                     {% if user %}
-                    <button class="vote-btn downvote" 
-                            hx-post="/post/{{ post.id }}/vote" 
-                            hx-vals='{"value": -1}'
-                            hx-target="#score-{{ post.id }}"
-                            hx-swap="innerHTML">▼</button>
+                    <button class="vote-btn downvote" hx-post="/post/{{ post.id }}/vote" hx-vals='{"value": -1}' hx-target="#score-{{ post.id }}" hx-swap="innerHTML">▼</button>
                     {% else %}
                     <span class="vote-btn disabled">▼</span>
                     {% endif %}
                 </div>
                 <div class="post-content">
-                    <h2><a href="/post/{{ post.id }}">{{ post.title }}</a></h2>
+                    {% if post.pinned %}
+                    <span class="post-tag" style="background: rgba(234, 179, 8, 0.2); color: #fbbf24;">📌 Pinned</span>
+                    {% endif %}
+                    <h2 class="post-title"><a href="/post/{{ post.id }}">{{ post.title }}</a></h2>
                     <div class="post-meta">
-                        <span class="author">
-                            by <a href="/user/{{ post.username }}">{{ post.username }}</a>
-                            {% if post.user_role == "verified_mechanic" %}
-                            <span class="badge verified" title="Verified Mechanic">🔧✓</span>
-                            {% elif post.user_role == "moderator" %}
-                            <span class="badge mod" title="Moderator">🛡️</span>
-                            {% elif post.user_role == "admin" %}
-                            <span class="badge admin" title="Admin">⭐</span>
-                            {% endif %}
+                        <span class="meta-item">by <a href="/user/{{ post.username }}">{{ post.username }}</a>
+                            {% if post.user_role == "verified_mechanic" %}<span class="badge verified">🔧</span>{% endif %}
                         </span>
-                        <span class="comments">💬 {{ post.comment_count | default(value=0) }}</span>
-                        <span class="time">{{ post.created_at }}</span>
+                        <span class="meta-separator">•</span>
+                        <span class="meta-item">💬 {{ post.comment_count | default(value=0) }}</span>
+                        <span class="meta-separator">•</span>
+                        <span class="meta-item">{{ post.created_at }}</span>
                     </div>
                 </div>
             </article>
             {% else %}
-            <p class="no-posts">No posts in this category yet.</p>
+            <div class="empty-state">
+                <div class="empty-state-icon">📝</div>
+                <h3 class="empty-state-title">No posts in this category</h3>
+                <p class="empty-state-text">Be the first to start a discussion!</p>
+            </div>
             {% endfor %}
         </div>
+        
+        {% if pagination and pagination.total_pages > 1 %}
+        <div class="pagination">
+            {% if pagination.has_prev %}
+            <a href="/category/{{ current_slug }}?sort={{ sort }}&page={{ pagination.page - 1 }}" class="pagination-btn">← Prev</a>
+            {% endif %}
+            <span class="pagination-btn">{{ pagination.page }} / {{ pagination.total_pages }}</span>
+            {% if pagination.has_next %}
+            <a href="/category/{{ current_slug }}?sort={{ sort }}&page={{ pagination.page + 1 }}" class="pagination-btn">Next →</a>
+            {% endif %}
+        </div>
+        {% endif %}
     </section>
 </div>
 {% endblock %}

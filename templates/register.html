@@ -1,43 +1,54 @@
 {% extends "base.html" %}
 
-{% block title %}Register - Wrench Forum{% endblock %}
+{% block title %}Join - Wrench Forum{% endblock %}
 
 {% block content %}
 <div class="auth-page">
     <div class="auth-card">
-        <h1>Register</h1>
+        <div class="auth-header">
+            <h1 class="auth-title">Join Wrench Forum</h1>
+            <p class="auth-subtitle">The professional community for mechanics</p>
+        </div>
         
-        {% if error %}
-        <div class="alert alert-error">{{ error }}</div>
+        {% if errors %}
+        <div class="alert alert-error">
+            <ul style="margin: 0; padding-left: 20px;">
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+        </div>
         {% endif %}
         
-        <form method="post" action="/register">
+        <form method="POST" action="/register">
             <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" name="email" id="email" required>
+                <label class="form-label required" for="email">Email</label>
+                <input type="email" id="email" name="email" value="{{ email | default(value='') }}" placeholder="mechanic@example.com" required>
             </div>
             
             <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" name="username" id="username" minlength="3" required>
+                <label class="form-label required" for="username">Username</label>
+                <input type="text" id="username" name="username" value="{{ username | default(value='') }}" placeholder="gearhead_mike" required minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]+">
+                <p class="form-hint">3-20 characters, letters, numbers, and underscores only</p>
             </div>
             
             <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" name="password" id="password" minlength="6" required>
+                <label class="form-label required" for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required minlength="8">
+                <p class="form-hint">At least 8 characters</p>
             </div>
             
             <div class="form-group">
-                <label for="password_confirm">Confirm Password</label>
-                <input type="password" name="password_confirm" id="password_confirm" required>
+                <label class="form-label required" for="password_confirm">Confirm Password</label>
+                <input type="password" id="password_confirm" name="password_confirm" placeholder="••••••••" required>
             </div>
             
-            <button type="submit" class="btn btn-primary btn-block">Register</button>
+            <button type="submit" class="btn btn-primary btn-block btn-lg">Create Account</button>
         </form>
         
-        <p class="auth-footer">
-            Already have an account? <a href="/login">Login</a>
-        </p>
+        <div class="auth-footer">
+            Already have an account? <a href="/login">Sign in</a>
+        </div>
     </div>
 </div>
 {% endblock %}

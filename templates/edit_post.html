@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Post - Wrench Forum{% endblock %}
+
+{% block content %}
+<div class="container-narrow">
+    <div class="auth-card" style="max-width: 700px;">
+        <div class="auth-header">
+            <h1 class="auth-title">Edit Post</h1>
+        </div>
+        
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        
+        <form method="POST" action="/post/{{ post.id }}/edit">
+            <div class="form-group">
+                <label class="form-label required" for="title">Title</label>
+                <input type="text" id="title" name="title" value="{{ post.title }}" required maxlength="300">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label required" for="body">Body</label>
+                <textarea id="body" name="body" rows="12" required>{{ post.body }}</textarea>
+                <p class="form-hint">Supports **bold**, *italic*, `code`, and [links](url)</p>
+            </div>
+            
+            <div class="btn-group mt-6">
+                <button type="submit" class="btn btn-primary btn-lg">Save Changes</button>
+                <a href="/post/{{ post.id }}" class="btn btn-secondary btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -6,3 +6,7 @@ pub mod profile;
 pub mod verification;
 pub mod admin;
 pub mod moderation;
+pub mod search;
+pub mod bookmarks;
+pub mod notifications;
+pub mod uploads;

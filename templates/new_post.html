@@ -3,38 +3,64 @@
 {% block title %}New Post - Wrench Forum{% endblock %}
 
 {% block content %}
-<div class="form-page">
-    <h1>Create New Post</h1>
-    
-    {% if error %}
-    <div class="alert alert-error">{{ error }}</div>
-    {% endif %}
-    
-    <form method="post" action="/post/new" class="post-form">
-        <div class="form-group">
-            <label for="category_id">Category</label>
-            <select name="category_id" id="category_id" required>
-                <option value="">Select a category...</option>
-                {% for cat in categories %}
-                <option value="{{ cat.id }}">{{ cat.name }}</option>
-                {% endfor %}
-            </select>
+<div class="container-narrow">
+    <div class="auth-card" style="max-width: 700px;">
+        <div class="auth-header">
+            <h1 class="auth-title">Create a Post</h1>
+            <p class="auth-subtitle">Share your knowledge with the community</p>
         </div>
         
-        <div class="form-group">
-            <label for="title">Title</label>
-            <input type="text" name="title" id="title" placeholder="What's your question or topic?" required maxlength="200">
-        </div>
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
         
-        <div class="form-group">
-            <label for="body">Body</label>
-            <textarea name="body" id="body" rows="10" placeholder="Describe your problem in detail. Include vehicle make/model/year, symptoms, what you've tried, etc." required></textarea>
-        </div>
-        
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Create Post</button>
-            <a href="/" class="btn btn-secondary">Cancel</a>
-        </div>
-    </form>
+        <form method="POST" action="/post/new">
+            <div class="form-group">
+                <label class="form-label required" for="category_id">Category</label>
+                <select id="category_id" name="category_id" required>
+                    <option value="">Select a category...</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.icon | default(value='📁') }} {{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label required" for="title">Title</label>
+                <input type="text" id="title" name="title" placeholder="What's your question or topic?" required maxlength="300">
+                <p class="form-hint">Be specific and descriptive</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label required" for="body">Body</label>
+                <textarea id="body" name="body" rows="10" placeholder="Describe your issue, question, or share your knowledge...
+
+Tips:
+• Include vehicle make, model, and year when relevant
+• Describe symptoms and what you've tried
+• Add error codes if applicable" required></textarea>
+                <p class="form-hint">Supports **bold**, *italic*, `code`, and [links](url)</p>
+            </div>
+            
+            {% if tags %}
+            <div class="form-group">
+                <label class="form-label">Tags (optional)</label>
+                <div class="tag-selector">
+                    {% for tag in tags %}
+                    <label class="tag-option">
+                        <input type="checkbox" name="tags" value="{{ tag.id }}">
+                        <span style="color: {{ tag.color }}">{{ tag.name }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="btn-group mt-6">
+                <button type="submit" class="btn btn-primary btn-lg">Post</button>
+                <a href="/" class="btn btn-secondary btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}

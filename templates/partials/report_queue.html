@@ -1,37 +1,53 @@
-{% if reports | length > 0 %}
-<div class="report-list">
+{% if reports %}
+<div class="post-list">
     {% for report in reports %}
-    <div class="report-card">
-        <div class="report-header">
-            <strong>Reported by:</strong> {{ report.reporter_name }}
-            <span class="time">{{ report.created_at }}</span>
-        </div>
-        <div class="report-content">
-            {% if report.post_id %}
-            <p><strong>Post:</strong> <a href="/post/{{ report.post_id }}">{{ report.post_title }}</a></p>
-            {% elif report.comment_id %}
-            <p><strong>Comment:</strong> "{{ report.comment_body | truncate(length=100) }}"</p>
+    <div class="post-card">
+        <div class="post-content">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <span class="badge" style="background: var(--color-danger-light); color: var(--color-danger);">
+                        {% if report.post_id %}Post Report{% else %}Comment Report{% endif %}
+                    </span>
+                    <span class="text-muted text-sm ml-2">by {{ report.reporter_name }}</span>
+                </div>
+                <span class="text-muted text-sm">{{ report.created_at }}</span>
+            </div>
+            
+            <p class="mb-4"><strong>Reason:</strong> {{ report.reason }}</p>
+            
+            {% if report.post_title %}
+            <div class="p-4 bg-dark rounded mb-4">
+                <strong>Post:</strong> <a href="/post/{{ report.post_id }}">{{ report.post_title }}</a>
+            </div>
             {% endif %}
-            <p><strong>Reason:</strong> {{ report.reason }}</p>
-        </div>
-        <div class="report-actions">
-            {% if report.post_id %}
-            <button class="btn btn-danger btn-small" 
-                    hx-post="/mod/post/{{ report.post_id }}/remove"
-                    hx-confirm="Remove this post?">Remove Post</button>
-            {% elif report.comment_id %}
-            <button class="btn btn-danger btn-small" 
-                    hx-post="/mod/comment/{{ report.comment_id }}/remove"
-                    hx-confirm="Remove this comment?">Remove Comment</button>
+            
+            {% if report.comment_body %}
+            <div class="p-4 bg-dark rounded mb-4">
+                <strong>Comment:</strong>
+                <p class="text-secondary">{{ report.comment_body | truncate(length=200) }}</p>
+            </div>
             {% endif %}
-            <button class="btn btn-secondary btn-small" 
-                    hx-post="/mod/report/{{ report.id }}/resolve"
-                    hx-target="#report-queue"
-                    hx-swap="innerHTML">Dismiss</button>
+            
+            <div class="btn-group">
+                {% if report.post_id %}
+                <a href="/post/{{ report.post_id }}" class="btn btn-secondary btn-sm">View Post</a>
+                <button class="btn btn-danger btn-sm" hx-post="/mod/post/{{ report.post_id }}/remove" hx-target="#report-queue" hx-confirm="Remove this post?">Remove Post</button>
+                {% endif %}
+                
+                {% if report.comment_id %}
+                <button class="btn btn-danger btn-sm" hx-post="/mod/comment/{{ report.comment_id }}/remove" hx-swap="none" hx-confirm="Remove this comment?">Remove Comment</button>
+                {% endif %}
+                
+                <button class="btn btn-secondary btn-sm" hx-post="/mod/report/{{ report.id }}/resolve" hx-target="#report-queue">Dismiss</button>
+            </div>
         </div>
     </div>
     {% endfor %}
 </div>
 {% else %}
-<p class="no-items">No reports to review. 🎉</p>
+<div class="empty-state">
+    <div class="empty-state-icon">✓</div>
+    <h3 class="empty-state-title">No pending reports</h3>
+    <p class="empty-state-text">The community is behaving well!</p>
+</div>
 {% endif %}

@@ -1,55 +1,81 @@
 {% extends "base.html" %}
 
-{% block title %}Mechanic Verification - Wrench Forum{% endblock %}
+{% block title %}Get Verified - Wrench Forum{% endblock %}
 
 {% block content %}
-<div class="form-page">
-    <h1>🔧 Get Verified</h1>
-    <p class="page-description">
-        Verified mechanics can create posts, and get a badge showing their professional status.
-        Submit proof of your mechanic credentials below.
-    </p>
-    
-    {% if error %}
-    <div class="alert alert-error">{{ error }}</div>
-    {% endif %}
-    
-    <form method="post" action="/verification" class="verification-form">
-        <div class="form-group">
-            <label for="proof_type">Proof Type</label>
-            <select name="proof_type" id="proof_type" required>
-                <option value="">Select proof type...</option>
-                {% for pt in proof_types %}
-                <option value="{{ pt.0 }}">{{ pt.1 }}</option>
-                {% endfor %}
-            </select>
+<div class="container-narrow">
+    <div class="auth-card" style="max-width: 600px;">
+        <div class="auth-header">
+            <h1 class="auth-title">🔧 Mechanic Verification</h1>
+            <p class="auth-subtitle">Verify your credentials to unlock posting privileges</p>
         </div>
         
-        <div class="form-group">
-            <label for="proof_text">Verification Details</label>
-            <textarea name="proof_text" id="proof_text" rows="6" required
-                      placeholder="Provide details for verification:
+        {% if already_verified %}
+        <div class="alert alert-success">
+            <span>✓</span>
+            <div>
+                <strong>You're already verified!</strong>
+                <p class="text-sm mt-1">You have full access to post and participate.</p>
+            </div>
+        </div>
+        <a href="/" class="btn btn-primary btn-block">Back to Forum</a>
+        
+        {% elif has_pending %}
+        <div class="alert alert-info">
+            <span>⏳</span>
+            <div>
+                <strong>Verification Pending</strong>
+                <p class="text-sm mt-1">Your request is being reviewed. You'll be notified once it's processed.</p>
+            </div>
+        </div>
+        <a href="/" class="btn btn-secondary btn-block">Back to Forum</a>
+        
+        {% else %}
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        
+        <form method="POST" action="/verification">
+            <div class="form-group">
+                <label class="form-label required">Proof Type</label>
+                <select name="proof_type" required>
+                    <option value="">Select verification type...</option>
+                    <option value="ase_cert">ASE Certification</option>
+                    <option value="shop_employment">Shop Employment</option>
+                    <option value="business_license">Business License/Shop Owner</option>
+                    <option value="trade_school">Trade School Certificate</option>
+                    <option value="manufacturer_cert">Manufacturer Certification</option>
+                    <option value="other">Other Professional Credential</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label required">Verification Details</label>
+                <textarea name="proof_text" rows="6" required
+                    placeholder="Please provide details about your credentials:
 
-- ASE Certification: Include your certification number and areas
-- Shop Employment: Shop name, your role, how long you've worked there
-- Business License: Business name and license number
-- Other: Describe your professional automotive experience"></textarea>
-        </div>
-        
-        <div class="form-info">
-            <h3>What happens next?</h3>
-            <ul>
-                <li>An admin will review your submission</li>
-                <li>We may contact you for additional verification</li>
-                <li>Once approved, you'll get the verified mechanic badge</li>
-                <li>Verified mechanics can create posts and vote on store reliability</li>
-            </ul>
-        </div>
-        
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Submit for Verification</button>
-            <a href="/profile" class="btn btn-secondary">Cancel</a>
-        </div>
-    </form>
+• Certification numbers or names
+• Shop name and your role
+• Years of experience
+• Specializations
+
+The more detail you provide, the faster we can verify you."></textarea>
+                <p class="form-hint">Minimum 50 characters. Be specific to speed up verification.</p>
+            </div>
+            
+            <div class="alert alert-info mb-6">
+                <strong>What we're looking for:</strong>
+                <ul class="mt-2 ml-4" style="list-style: disc;">
+                    <li>Professional mechanics with verifiable credentials</li>
+                    <li>Shop employees or owners</li>
+                    <li>Trade school graduates</li>
+                    <li>ASE or manufacturer-certified technicians</li>
+                </ul>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block btn-lg">Submit for Verification</button>
+        </form>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

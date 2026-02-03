@@ -1,30 +1,39 @@
-{% if pending_verifications | length > 0 %}
-<div class="verification-list">
-    {% for req in pending_verifications %}
-    <div class="verification-card">
-        <div class="verification-header">
-            <strong>{{ req.username }}</strong> ({{ req.email }})
-            <span class="time">{{ req.created_at }}</span>
-        </div>
-        <div class="verification-details">
-            <p><strong>Type:</strong> {{ req.proof_type }}</p>
-            <p><strong>Details:</strong></p>
-            <pre>{{ req.proof_text }}</pre>
-        </div>
-        <div class="verification-actions">
-            <button class="btn btn-primary" 
-                    hx-post="/admin/verify/{{ req.id }}/approve"
-                    hx-target="#verification-queue"
-                    hx-swap="innerHTML">Approve</button>
-            <button class="btn btn-danger" 
-                    hx-post="/admin/verify/{{ req.id }}/deny"
-                    hx-target="#verification-queue"
-                    hx-swap="innerHTML"
-                    hx-confirm="Deny this verification request?">Deny</button>
+{% if pending_verifications %}
+<div class="post-list">
+    {% for v in pending_verifications %}
+    <div class="post-card">
+        <div class="post-content">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <a href="/user/{{ v.username }}" class="font-bold">{{ v.username }}</a>
+                    <span class="text-muted text-sm ml-2">{{ v.email }}</span>
+                </div>
+                <span class="text-muted text-sm">{{ v.created_at }}</span>
+            </div>
+            
+            <p class="mb-2"><strong>Type:</strong> {{ v.proof_type }}</p>
+            
+            <div class="p-4 bg-dark rounded mb-4">
+                <pre style="white-space: pre-wrap; font-family: inherit;">{{ v.proof_text }}</pre>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-primary btn-sm" 
+                        hx-post="/admin/verify/{{ v.id }}/approve" 
+                        hx-target="#verification-queue"
+                        hx-confirm="Approve this verification?">✓ Approve</button>
+                <button class="btn btn-danger btn-sm" 
+                        hx-post="/admin/verify/{{ v.id }}/deny" 
+                        hx-target="#verification-queue"
+                        hx-confirm="Deny this verification?">✗ Deny</button>
+            </div>
         </div>
     </div>
     {% endfor %}
 </div>
 {% else %}
-<p class="no-items">No pending verification requests.</p>
+<div class="empty-state">
+    <div class="empty-state-icon">✓</div>
+    <h3 class="empty-state-title">No pending verifications</h3>
+</div>
 {% endif %}

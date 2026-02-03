@@ -3,21 +3,25 @@
 {% block title %}Mod Queue - Wrench Forum{% endblock %}
 
 {% block content %}
-<div class="mod-page">
-    <h1>🛡️ Moderation Queue</h1>
-    
-    <section class="mod-section">
-        <h2>Reported Content</h2>
-        <div id="report-queue">
-            {% include "partials/report_queue.html" %}
-        </div>
-    </section>
-    
-    <section class="mod-section">
-        <h2>Banned Users</h2>
-        <div id="ban-list">
-            {% include "partials/ban_list.html" %}
-        </div>
-    </section>
-</div>
+<h1 class="mb-6">🛡️ Moderation Queue</h1>
+
+<!-- Reports Section -->
+<section class="admin-section">
+    <div class="admin-section-header">
+        <h2 class="admin-section-title">🚩 Pending Reports ({{ reports | length }})</h2>
+    </div>
+    <div id="report-queue">
+        {% include "partials/report_queue.html" %}
+    </div>
+</section>
+
+<!-- Banned Users -->
+<section class="admin-section">
+    <div class="admin-section-header">
+        <h2 class="admin-section-title">🚫 Banned Users ({{ banned_users | length }})</h2>
+    </div>
+    <div id="ban-list">
+        {% include "partials/ban_list.html" %}
+    </div>
+</section>
 {% endblock %}

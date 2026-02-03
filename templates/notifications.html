@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications - Wrench Forum{% endblock %}
+
+{% block content %}
+<div class="container-narrow">
+    <div class="flex justify-between items-center mb-6">
+        <h1>Notifications</h1>
+        {% if notifications and unread_notifications > 0 %}
+        <button class="btn btn-secondary btn-sm" hx-post="/notifications/read-all" hx-swap="none">
+            Mark all as read
+        </button>
+        {% endif %}
+    </div>
+    
+    {% if notifications %}
+    <div class="post-list">
+        {% for notif in notifications %}
+        <div class="post-card" style="{% if not notif.read %}border-left: 3px solid var(--color-primary);{% endif %}">
+            <div class="post-content">
+                <div class="flex items-center gap-4 mb-2">
+                    <span class="text-lg">
+                        {% if notif.notification_type == "Reply" %}💬
+                        {% elif notif.notification_type == "Mention" %}@
+                        {% elif notif.notification_type == "PostReply" %}📝
+                        {% elif notif.notification_type == "BestAnswer" %}✓
+                        {% elif notif.notification_type == "Upvote" %}⬆️
+                        {% else %}🔔{% endif %}
+                    </span>
+                    <div style="flex: 1;">
+                        <p class="{% if not notif.read %}font-bold{% endif %}">{{ notif.content }}</p>
+                        {% if notif.from_username %}
+                        <p class="text-sm text-muted">from <a href="/user/{{ notif.from_username }}">{{ notif.from_username }}</a></p>
+                        {% endif %}
+                    </div>
+                    <span class="text-sm text-muted">{{ notif.created_at }}</span>
+                </div>
+                
+                {% if notif.post_title %}
+                <a href="/post/{{ notif.post_id }}{% if notif.comment_id %}#comment-{{ notif.comment_id }}{% endif %}" 
+                   class="text-secondary hover:text-primary"
+                   hx-post="/notifications/{{ notif.id }}/read"
+                   hx-swap="none">
+                    → {{ notif.post_title }}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🔔</div>
+        <h3 class="empty-state-title">No notifications</h3>
+        <p class="empty-state-text">You're all caught up!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -3,42 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Wrench Forum - The professional community for mechanics">
     <title>{% block title %}Wrench Forum{% endblock %}</title>
     <link rel="stylesheet" href="/static/style.css">
     <script src="/static/htmx.min.js"></script>
 </head>
-<body>
+<body hx-boost="true">
     <header class="site-header">
         <div class="container">
-            <a href="/" class="logo">🔧 Wrench Forum</a>
-            <nav class="main-nav">
-                <a href="/">Home</a>
-                <a href="/stores">Parts Stores</a>
-                {% if user %}
-                    {% if user.role == "Admin" or user.role == "Moderator" %}
-                        <a href="/mod">Mod Queue</a>
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <span class="logo-icon">🔧</span>
+                    <span>Wrench Forum</span>
+                </a>
+                
+                <div class="search-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="search" 
+                           class="search-input" 
+                           placeholder="Search posts, stores..."
+                           hx-get="/api/search/suggestions"
+                           hx-trigger="keyup changed delay:300ms"
+                           hx-target="#search-suggestions"
+                           name="q">
+                    <div id="search-suggestions" class="search-suggestions"></div>
+                </div>
+                
+                <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
+                
+                <nav class="main-nav" id="main-nav">
+                    <a href="/" class="nav-link {% if current_page == 'home' %}active{% endif %}">Home</a>
+                    <a href="/stores" class="nav-link {% if current_page == 'stores' %}active{% endif %}">Parts Stores</a>
+                    
+                    {% if user %}
+                        <a href="/bookmarks" class="nav-link {% if current_page == 'bookmarks' %}active{% endif %}">
+                            Bookmarks
+                        </a>
+                        
+                        <a href="/notifications" class="nav-link {% if current_page == 'notifications' %}active{% endif %}">
+                            <span class="nav-link-icon">
+                                🔔
+                                <span id="notification-count" hx-get="/notifications/count" hx-trigger="load, every 60s">
+                                    {% if unread_notifications and unread_notifications > 0 %}
+                                    <span class="notification-badge">{{ unread_notifications }}</span>
+                                    {% endif %}
+                                </span>
+                            </span>
+                        </a>
+                        
+                        {% if user.role == "Admin" or user.role == "Moderator" %}
+                        <a href="/mod" class="nav-link {% if current_page == 'mod' %}active{% endif %}">Mod</a>
+                        {% endif %}
+                        
+                        {% if user.role == "Admin" %}
+                        <a href="/admin" class="nav-link {% if current_page == 'admin' %}active{% endif %}">Admin</a>
+                        {% endif %}
+                        
+                        <a href="/user/{{ user.username }}" class="nav-link user-menu">
+                            {% if user_avatar %}
+                            <img src="{{ user_avatar }}" alt="{{ user.username }}" class="user-avatar">
+                            {% else %}
+                            <span class="user-avatar-placeholder">{{ user.username | first | upper }}</span>
+                            {% endif %}
+                            <span>{{ user.username }}</span>
+                        </a>
+                        
+                        <a href="/logout" class="nav-link">Logout</a>
+                    {% else %}
+                        <a href="/login" class="nav-link">Login</a>
+                        <a href="/register" class="btn btn-primary btn-sm">Join</a>
                     {% endif %}
-                    {% if user.role == "Admin" %}
-                        <a href="/admin">Admin</a>
-                    {% endif %}
-                    <a href="/profile">{{ user.username }}</a>
-                    <a href="/logout">Logout</a>
-                {% else %}
-                    <a href="/login">Login</a>
-                    <a href="/register">Register</a>
-                {% endif %}
-            </nav>
+                </nav>
+            </div>
         </div>
     </header>
     
-    <main class="container">
-        {% block content %}{% endblock %}
+    <main>
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
     </main>
     
     <footer class="site-footer">
         <div class="container">
-            <p>&copy; 2024 Wrench Forum - By mechanics, for mechanics</p>
+            <div class="footer-content">
+                <p class="footer-text">© 2024 Wrench Forum — By mechanics, for mechanics</p>
+                <nav class="footer-links">
+                    <a href="/search" class="footer-link">Search</a>
+                    <a href="/verification" class="footer-link">Get Verified</a>
+                    <a href="/stores" class="footer-link">Part Stores</a>
+                </nav>
+            </div>
         </div>
     </footer>
+    
+    <!-- Toast Container for Notifications -->
+    <div id="toast-container"></div>
+    
+    <script>
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            document.getElementById('main-nav').classList.toggle('active');
+        }
+        
+        // Search suggestions
+        document.addEventListener('htmx:afterSwap', function(evt) {
+            if (evt.detail.target.id === 'search-suggestions') {
+                const suggestions = evt.detail.target;
+                if (suggestions.innerHTML.trim()) {
+                    suggestions.classList.add('active');
+                } else {
+                    suggestions.classList.remove('active');
+                }
+            }
+        });
+        
+        // Close search suggestions on click outside
+        document.addEventListener('click', function(e) {
+            const search = document.querySelector('.search-container');
+            const suggestions = document.getElementById('search-suggestions');
+            if (search && !search.contains(e.target)) {
+                suggestions.classList.remove('active');
+            }
+        });
+        
+        // Auto-hide toasts
+        document.addEventListener('htmx:afterSwap', function(evt) {
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(toast => {
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            });
+        });
+    </script>
 </body>
 </html>

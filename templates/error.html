@@ -4,8 +4,15 @@
 
 {% block content %}
 <div class="error-page">
-    <h1>Oops!</h1>
-    <p class="error-message">{{ error }}</p>
-    <a href="/" class="btn btn-primary">Go Home</a>
+    <div class="error-code">⚠️</div>
+    <h1 class="error-title">Something went wrong</h1>
+    <p class="error-message">{{ error | default(value="An unexpected error occurred") }}</p>
+    {% if error_details %}
+    <p class="text-muted mb-6">{{ error_details }}</p>
+    {% endif %}
+    <div class="btn-group justify-center">
+        <a href="/" class="btn btn-primary">Go Home</a>
+        <button onclick="history.back()" class="btn btn-secondary">Go Back</button>
+    </div>
 </div>
 {% endblock %}

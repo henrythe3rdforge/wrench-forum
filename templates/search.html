@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Search{% if query %}: {{ query }}{% endif %} - Wrench Forum{% endblock %}
+
+{% block content %}
+<div class="container-narrow">
+    <h1 class="mb-6">🔍 Search</h1>
+    
+    <form action="/search" method="GET" class="mb-6">
+        <div class="flex gap-4">
+            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                <input type="search" name="q" value="{{ query | default(value='') }}" placeholder="Search posts, stores..." class="search-input" style="padding-left: 16px;">
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+        
+        <div class="flex gap-4 mt-4">
+            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                <select name="category">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                <select name="sort">
+                    <option value="relevance" {% if sort == 'relevance' %}selected{% endif %}>Most Relevant</option>
+                    <option value="new" {% if sort == 'new' %}selected{% endif %}>Newest</option>
+                    <option value="top" {% if sort == 'top' %}selected{% endif %}>Top Rated</option>
+                </select>
+            </div>
+            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                <select name="time">
+                    <option value="all" {% if time == 'all' %}selected{% endif %}>All Time</option>
+                    <option value="day" {% if time == 'day' %}selected{% endif %}>Past 24 Hours</option>
+                    <option value="week" {% if time == 'week' %}selected{% endif %}>Past Week</option>
+                    <option value="month" {% if time == 'month' %}selected{% endif %}>Past Month</option>
+                </select>
+            </div>
+        </div>
+    </form>
+    
+    {% if query %}
+    <div class="mb-4 text-muted">
+        Found {{ result_count | default(value=0) }} results for "{{ query }}"
+    </div>
+    
+    {% if posts %}
+    <h2 class="mb-4">Posts</h2>
+    <div class="post-list mb-6">
+        {% for post in posts %}
+        <article class="post-card">
+            <div class="vote-controls">
+                <span class="score">{{ post.score }}</span>
+            </div>
+            <div class="post-content">
+                <h2 class="post-title">
+                    <a href="/post/{{ post.id }}">{{ post.title }}</a>
+                </h2>
+                <div class="post-excerpt">{{ post.body | truncate(length=200) }}</div>
+                <div class="post-meta">
+                    <span class="meta-item">
+                        <a href="/category/{{ post.category_slug }}">{{ post.category_name }}</a>
+                    </span>
+                    <span class="meta-separator">•</span>
+                    <span class="meta-item">by {{ post.username }}</span>
+                    <span class="meta-separator">•</span>
+                    <span class="meta-item">💬 {{ post.comment_count | default(value=0) }}</span>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% if stores %}
+    <h2 class="mb-4">Stores</h2>
+    <div class="store-grid">
+        {% for store in stores %}
+        <div class="store-card">
+            <div class="store-header">
+                <h3 class="store-name">{{ store.name }}</h3>
+                <span class="store-category-badge">{{ store.category }}</span>
+            </div>
+            <a href="{{ store.url }}" class="store-url" target="_blank">{{ store.url }}</a>
+            {% if store.description %}
+            <p class="store-description">{{ store.description }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% if not posts and not stores %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🔍</div>
+        <h3 class="empty-state-title">No results found</h3>
+        <p class="empty-state-text">Try different keywords or broaden your search</p>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🔍</div>
+        <h3 class="empty-state-title">Search the forum</h3>
+        <p class="empty-state-text">Find posts, discussions, and part stores</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
