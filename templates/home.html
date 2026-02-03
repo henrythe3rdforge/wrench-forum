@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Wrench Forum - Home{% endblock %}
+
+{% block content %}
+<div class="forum-layout">
+    <aside class="sidebar">
+        <h3>Categories</h3>
+        <ul class="category-list">
+            {% for cat in categories %}
+            <li><a href="/category/{{ cat.slug }}">{{ cat.name }}</a></li>
+            {% endfor %}
+        </ul>
+        
+        {% if user and user.role != "Unverified" %}
+        <a href="/post/new" class="btn btn-primary">New Post</a>
+        {% elif user %}
+        <div class="verify-prompt">
+            <p>Verify your mechanic credentials to post</p>
+            <a href="/verification" class="btn btn-secondary">Get Verified</a>
+        </div>
+        {% else %}
+        <p class="login-prompt">
+            <a href="/login">Login</a> to participate
+        </p>
+        {% endif %}
+    </aside>
+    
+    <section class="main-content">
+        <div class="sort-tabs">
+            <a href="/?sort=hot" class="tab active">🔥 Hot</a>
+            <a href="/?sort=new" class="tab">🕐 New</a>
+            <a href="/?sort=top" class="tab">⬆️ Top</a>
+        </div>
+        
+        <div class="post-list">
+            {% for post in posts %}
+            <article class="post-card">
+                <div class="vote-controls">
+                    {% if user %}
+                    <button class="vote-btn upvote" 
+                            hx-post="/post/{{ post.id }}/vote" 
+                            hx-vals='{"value": 1}'
+                            hx-target="#score-{{ post.id }}"
+                            hx-swap="innerHTML">▲</button>
+                    {% else %}
+                    <span class="vote-btn disabled">▲</span>
+                    {% endif %}
+                    <span id="score-{{ post.id }}" class="score">{{ post.score }}</span>
+                    {% if user %}
+                    <button class="vote-btn downvote" 
+                            hx-post="/post/{{ post.id }}/vote" 
+                            hx-vals='{"value": -1}'
+                            hx-target="#score-{{ post.id }}"
+                            hx-swap="innerHTML">▼</button>
+                    {% else %}
+                    <span class="vote-btn disabled">▼</span>
+                    {% endif %}
+                </div>
+                <div class="post-content">
+                    <h2><a href="/post/{{ post.id }}">{{ post.title }}</a></h2>
+                    <div class="post-meta">
+                        <span class="category"><a href="/category/{{ post.category_slug }}">{{ post.category_name }}</a></span>
+                        <span class="author">
+                            by <a href="/user/{{ post.username }}">{{ post.username }}</a>
+                            {% if post.user_role == "verified_mechanic" %}
+                            <span class="badge verified" title="Verified Mechanic">🔧✓</span>
+                            {% elif post.user_role == "moderator" %}
+                            <span class="badge mod" title="Moderator">🛡️</span>
+                            {% elif post.user_role == "admin" %}
+                            <span class="badge admin" title="Admin">⭐</span>
+                            {% endif %}
+                        </span>
+                        <span class="comments">💬 {{ post.comment_count | default(value=0) }}</span>
+                        <span class="time">{{ post.created_at }}</span>
+                    </div>
+                </div>
+            </article>
+            {% else %}
+            <p class="no-posts">No posts yet. Be the first!</p>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

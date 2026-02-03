@@ -1,0 +1,37 @@
+{% if reports | length > 0 %}
+<div class="report-list">
+    {% for report in reports %}
+    <div class="report-card">
+        <div class="report-header">
+            <strong>Reported by:</strong> {{ report.reporter_name }}
+            <span class="time">{{ report.created_at }}</span>
+        </div>
+        <div class="report-content">
+            {% if report.post_id %}
+            <p><strong>Post:</strong> <a href="/post/{{ report.post_id }}">{{ report.post_title }}</a></p>
+            {% elif report.comment_id %}
+            <p><strong>Comment:</strong> "{{ report.comment_body | truncate(length=100) }}"</p>
+            {% endif %}
+            <p><strong>Reason:</strong> {{ report.reason }}</p>
+        </div>
+        <div class="report-actions">
+            {% if report.post_id %}
+            <button class="btn btn-danger btn-small" 
+                    hx-post="/mod/post/{{ report.post_id }}/remove"
+                    hx-confirm="Remove this post?">Remove Post</button>
+            {% elif report.comment_id %}
+            <button class="btn btn-danger btn-small" 
+                    hx-post="/mod/comment/{{ report.comment_id }}/remove"
+                    hx-confirm="Remove this comment?">Remove Comment</button>
+            {% endif %}
+            <button class="btn btn-secondary btn-small" 
+                    hx-post="/mod/report/{{ report.id }}/resolve"
+                    hx-target="#report-queue"
+                    hx-swap="innerHTML">Dismiss</button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="no-items">No reports to review. 🎉</p>
+{% endif %}

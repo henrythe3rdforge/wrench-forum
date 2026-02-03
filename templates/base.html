@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Wrench Forum{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/htmx.min.js"></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo">🔧 Wrench Forum</a>
+            <nav class="main-nav">
+                <a href="/">Home</a>
+                <a href="/stores">Parts Stores</a>
+                {% if user %}
+                    {% if user.role == "Admin" or user.role == "Moderator" %}
+                        <a href="/mod">Mod Queue</a>
+                    {% endif %}
+                    {% if user.role == "Admin" %}
+                        <a href="/admin">Admin</a>
+                    {% endif %}
+                    <a href="/profile">{{ user.username }}</a>
+                    <a href="/logout">Logout</a>
+                {% else %}
+                    <a href="/login">Login</a>
+                    <a href="/register">Register</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+    
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2024 Wrench Forum - By mechanics, for mechanics</p>
+        </div>
+    </footer>
+</body>
+</html>

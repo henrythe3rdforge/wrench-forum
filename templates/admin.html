@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - Wrench Forum{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <h1>⭐ Admin Panel</h1>
+    
+    <section class="admin-section">
+        <h2>Pending Verification Requests</h2>
+        <div id="verification-queue">
+            {% include "partials/verification_queue.html" %}
+        </div>
+    </section>
+    
+    <section class="admin-section">
+        <h2>User Management</h2>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in all_users %}
+                <tr>
+                    <td>{{ u.id }}</td>
+                    <td><a href="/user/{{ u.username }}">{{ u.username }}</a></td>
+                    <td>{{ u.email }}</td>
+                    <td id="role-{{ u.id }}">
+                        <span class="role-badge {{ u.role | lower }}">{{ u.role | lower }}</span>
+                    </td>
+                    <td>{{ u.created_at }}</td>
+                    <td>{% if u.banned %}<span class="status-banned">Banned</span>{% else %}<span class="status-active">Active</span>{% endif %}</td>
+                    <td>
+                        <form hx-post="/admin/user/{{ u.id }}/role" hx-target="#role-{{ u.id }}" hx-swap="innerHTML" class="inline-form">
+                            <select name="role">
+                                <option value="unverified" {% if u.role == "Unverified" %}selected{% endif %}>Unverified</option>
+                                <option value="verified_mechanic" {% if u.role == "VerifiedMechanic" %}selected{% endif %}>Verified Mechanic</option>
+                                <option value="moderator" {% if u.role == "Moderator" %}selected{% endif %}>Moderator</option>
+                                <option value="admin" {% if u.role == "Admin" %}selected{% endif %}>Admin</option>
+                            </select>
+                            <button type="submit" class="btn btn-small">Update</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</div>
+{% endblock %}

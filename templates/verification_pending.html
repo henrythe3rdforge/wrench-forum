@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Verification Pending - Wrench Forum{% endblock %}
+
+{% block content %}
+<div class="message-page">
+    <div class="message-card">
+        <h1>⏳ Verification Pending</h1>
+        <p>{{ message }}</p>
+        <p>An admin will review your submission soon. You'll be notified when your status changes.</p>
+        <a href="/profile" class="btn btn-primary">Back to Profile</a>
+    </div>
+</div>
+{% endblock %}

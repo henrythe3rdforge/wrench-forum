@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - Wrench Forum{% endblock %}
+
+{% block content %}
+<article class="post-detail">
+    <div class="post-header">
+        <div class="vote-controls-large">
+            {% if user %}
+            <button class="vote-btn upvote" 
+                    hx-post="/post/{{ post.id }}/vote" 
+                    hx-vals='{"value": 1}'
+                    hx-target="#post-score"
+                    hx-swap="innerHTML">▲</button>
+            {% else %}
+            <span class="vote-btn disabled">▲</span>
+            {% endif %}
+            <span id="post-score" class="score">{{ post.score }}</span>
+            {% if user %}
+            <button class="vote-btn downvote" 
+                    hx-post="/post/{{ post.id }}/vote" 
+                    hx-vals='{"value": -1}'
+                    hx-target="#post-score"
+                    hx-swap="innerHTML">▼</button>
+            {% else %}
+            <span class="vote-btn disabled">▼</span>
+            {% endif %}
+        </div>
+        <div>
+            <h1>{{ post.title }}</h1>
+            <div class="post-meta">
+                <span class="category"><a href="/category/{{ post.category_slug }}">{{ post.category_name }}</a></span>
+                <span class="author">
+                    by <a href="/user/{{ post.username }}">{{ post.username }}</a>
+                    {% if post.user_role == "verified_mechanic" %}
+                    <span class="badge verified" title="Verified Mechanic">🔧✓</span>
+                    {% elif post.user_role == "moderator" %}
+                    <span class="badge mod" title="Moderator">🛡️</span>
+                    {% elif post.user_role == "admin" %}
+                    <span class="badge admin" title="Admin">⭐</span>
+                    {% endif %}
+                </span>
+                <span class="time">{{ post.created_at }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="post-body">
+        {{ post.body }}
+    </div>
+    
+    <div class="post-actions">
+        {% if user %}
+        <div class="report-form" id="report-form-post">
+            <button class="btn btn-small btn-danger" onclick="document.getElementById('report-modal-post').style.display='block'">Report</button>
+        </div>
+        <div id="report-modal-post" class="modal" style="display:none">
+            <div class="modal-content">
+                <h4>Report Post</h4>
+                <form hx-post="/post/{{ post.id }}/report" hx-target="#report-form-post" hx-swap="innerHTML">
+                    <textarea name="reason" placeholder="Reason for report..." required></textarea>
+                    <button type="submit" class="btn btn-danger">Submit Report</button>
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('report-modal-post').style.display='none'">Cancel</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if user and (user.role == "Admin" or user.role == "Moderator") %}
+        <button class="btn btn-small btn-danger" 
+                hx-post="/mod/post/{{ post.id }}/remove"
+                hx-confirm="Remove this post?">Remove Post</button>
+        {% endif %}
+    </div>
+</article>
+
+<section class="comments-section">
+    <h2>Comments ({{ post.comment_count | default(value=0) }})</h2>
+    
+    {% if user %}
+    <form class="comment-form" hx-post="/post/{{ post.id }}/comment" hx-target="#comments-list" hx-swap="innerHTML">
+        <textarea name="body" placeholder="Write a comment..." required></textarea>
+        <button type="submit" class="btn btn-primary">Post Comment</button>
+    </form>
+    {% else %}
+    <p class="login-prompt"><a href="/login">Login</a> to comment</p>
+    {% endif %}
+    
+    <div id="comments-list">
+        {% include "partials/comments.html" %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_user.username }} - Wrench Forum{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <div class="profile-header">
+        <h1>
+            {{ profile_user.username }}
+            {% if profile_user.role == "VerifiedMechanic" %}
+            <span class="badge verified">🔧 Verified Mechanic</span>
+            {% elif profile_user.role == "Moderator" %}
+            <span class="badge mod">🛡️ Moderator</span>
+            {% elif profile_user.role == "Admin" %}
+            <span class="badge admin">⭐ Admin</span>
+            {% endif %}
+        </h1>
+        <p class="join-date">Member since {{ profile_user.created_at }}</p>
+        
+        {% if is_own_profile and profile_user.role == "Unverified" %}
+        <div class="verify-prompt">
+            {% if has_pending_verification %}
+            <p>Your verification request is pending review.</p>
+            {% else %}
+            <p>Want to create posts and get the verified mechanic badge?</p>
+            <a href="/verification" class="btn btn-primary">Get Verified</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <section class="user-posts">
+        <h2>Posts by {{ profile_user.username }}</h2>
+        
+        {% if posts | length > 0 %}
+        <div class="post-list">
+            {% for post in posts %}
+            <article class="post-card compact">
+                <div class="vote-score">
+                    <span class="score">{{ post.score }}</span>
+                </div>
+                <div class="post-content">
+                    <h3><a href="/post/{{ post.id }}">{{ post.title }}</a></h3>
+                    <div class="post-meta">
+                        <span class="category"><a href="/category/{{ post.category_slug }}">{{ post.category_name }}</a></span>
+                        <span class="comments">💬 {{ post.comment_count | default(value=0) }}</span>
+                        <span class="time">{{ post.created_at }}</span>
+                        {% if post.removed %}
+                        <span class="removed-badge">Removed</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="no-posts">No posts yet.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

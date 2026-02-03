@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Mechanic Verification - Wrench Forum{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <h1>🔧 Get Verified</h1>
+    <p class="page-description">
+        Verified mechanics can create posts, and get a badge showing their professional status.
+        Submit proof of your mechanic credentials below.
+    </p>
+    
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+    
+    <form method="post" action="/verification" class="verification-form">
+        <div class="form-group">
+            <label for="proof_type">Proof Type</label>
+            <select name="proof_type" id="proof_type" required>
+                <option value="">Select proof type...</option>
+                {% for pt in proof_types %}
+                <option value="{{ pt.0 }}">{{ pt.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="proof_text">Verification Details</label>
+            <textarea name="proof_text" id="proof_text" rows="6" required
+                      placeholder="Provide details for verification:
+
+- ASE Certification: Include your certification number and areas
+- Shop Employment: Shop name, your role, how long you've worked there
+- Business License: Business name and license number
+- Other: Describe your professional automotive experience"></textarea>
+        </div>
+        
+        <div class="form-info">
+            <h3>What happens next?</h3>
+            <ul>
+                <li>An admin will review your submission</li>
+                <li>We may contact you for additional verification</li>
+                <li>Once approved, you'll get the verified mechanic badge</li>
+                <li>Verified mechanics can create posts and vote on store reliability</li>
+            </ul>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Submit for Verification</button>
+            <a href="/profile" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

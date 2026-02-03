@@ -1,0 +1,28 @@
+{% if banned_users | length > 0 %}
+<table class="mod-table">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in banned_users %}
+        <tr>
+            <td>{{ u.username }}</td>
+            <td>{{ u.email }}</td>
+            <td>
+                <button class="btn btn-small btn-secondary" 
+                        hx-post="/mod/user/{{ u.id }}/unban"
+                        hx-target="#ban-list"
+                        hx-swap="innerHTML"
+                        hx-confirm="Unban {{ u.username }}?">Unban</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="no-items">No banned users.</p>
+{% endif %}

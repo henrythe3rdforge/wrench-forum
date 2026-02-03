@@ -1,0 +1,88 @@
+{% macro render_comment(comment, depth) %}
+<div class="comment" style="margin-left: {{ depth * 20 }}px">
+    <div class="comment-header">
+        <div class="vote-controls-small">
+            {% if user %}
+            <button class="vote-btn upvote" 
+                    hx-post="/comment/{{ comment.id }}/vote" 
+                    hx-vals='{"value": 1}'
+                    hx-target="#cscore-{{ comment.id }}"
+                    hx-swap="innerHTML">▲</button>
+            {% endif %}
+            <span id="cscore-{{ comment.id }}" class="score">{{ comment.score }}</span>
+            {% if user %}
+            <button class="vote-btn downvote" 
+                    hx-post="/comment/{{ comment.id }}/vote" 
+                    hx-vals='{"value": -1}'
+                    hx-target="#cscore-{{ comment.id }}"
+                    hx-swap="innerHTML">▼</button>
+            {% endif %}
+        </div>
+        <span class="author">
+            <a href="/user/{{ comment.username }}">{{ comment.username }}</a>
+            {% if comment.user_role == "verified_mechanic" %}
+            <span class="badge verified">🔧✓</span>
+            {% elif comment.user_role == "moderator" %}
+            <span class="badge mod">🛡️</span>
+            {% elif comment.user_role == "admin" %}
+            <span class="badge admin">⭐</span>
+            {% endif %}
+        </span>
+        <span class="time">{{ comment.created_at }}</span>
+    </div>
+    <div class="comment-body">{{ comment.body }}</div>
+    <div class="comment-actions">
+        {% if user %}
+        <button class="btn-link" onclick="toggleReplyForm({{ comment.id }})">Reply</button>
+        <span id="report-{{ comment.id }}">
+            <button class="btn-link" onclick="toggleReportForm({{ comment.id }})">Report</button>
+        </span>
+        {% endif %}
+        {% if user and (user.role == "Admin" or user.role == "Moderator") %}
+        <button class="btn-link text-danger" 
+                hx-post="/mod/comment/{{ comment.id }}/remove"
+                hx-confirm="Remove this comment?">Remove</button>
+        {% endif %}
+    </div>
+    
+    <div id="reply-form-{{ comment.id }}" class="reply-form" style="display:none">
+        <form hx-post="/post/{{ comment.post_id }}/comment" hx-target="#comments-list" hx-swap="innerHTML">
+            <input type="hidden" name="parent_id" value="{{ comment.id }}">
+            <textarea name="body" placeholder="Write a reply..." required></textarea>
+            <button type="submit" class="btn btn-small btn-primary">Reply</button>
+        </form>
+    </div>
+    
+    <div id="report-form-{{ comment.id }}" class="report-form-inline" style="display:none">
+        <form hx-post="/comment/{{ comment.id }}/report" hx-target="#report-{{ comment.id }}" hx-swap="innerHTML">
+            <input type="text" name="reason" placeholder="Reason..." required>
+            <button type="submit" class="btn btn-small btn-danger">Report</button>
+        </form>
+    </div>
+    
+    {% if comment.replies %}
+    <div class="replies">
+        {% for reply in comment.replies %}
+            {{ self::render_comment(comment=reply, depth=depth + 1) }}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% for comment in comments %}
+    {{ self::render_comment(comment=comment, depth=0) }}
+{% else %}
+<p class="no-comments">No comments yet. Be the first!</p>
+{% endfor %}
+
+<script>
+function toggleReplyForm(id) {
+    var form = document.getElementById('reply-form-' + id);
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+function toggleReportForm(id) {
+    var form = document.getElementById('report-form-' + id);
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+</script>

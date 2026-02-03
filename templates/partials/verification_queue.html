@@ -1,0 +1,30 @@
+{% if pending_verifications | length > 0 %}
+<div class="verification-list">
+    {% for req in pending_verifications %}
+    <div class="verification-card">
+        <div class="verification-header">
+            <strong>{{ req.username }}</strong> ({{ req.email }})
+            <span class="time">{{ req.created_at }}</span>
+        </div>
+        <div class="verification-details">
+            <p><strong>Type:</strong> {{ req.proof_type }}</p>
+            <p><strong>Details:</strong></p>
+            <pre>{{ req.proof_text }}</pre>
+        </div>
+        <div class="verification-actions">
+            <button class="btn btn-primary" 
+                    hx-post="/admin/verify/{{ req.id }}/approve"
+                    hx-target="#verification-queue"
+                    hx-swap="innerHTML">Approve</button>
+            <button class="btn btn-danger" 
+                    hx-post="/admin/verify/{{ req.id }}/deny"
+                    hx-target="#verification-queue"
+                    hx-swap="innerHTML"
+                    hx-confirm="Deny this verification request?">Deny</button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="no-items">No pending verification requests.</p>
+{% endif %}
